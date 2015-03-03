@@ -8,7 +8,7 @@ ROWS = 20
 COLS = 20
 
 
-def main():
+def clean():
     parser = argparse.ArgumentParser()
     parser.add_argument('-o', '--out', help='Name of output file.', dest='out',
                         default=OUT_FILE)
@@ -35,5 +35,5 @@ def main():
             out_file.write('\n')
 
 if __name__ == '__main__':
-    main()
+    clean()
 
