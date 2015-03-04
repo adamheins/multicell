@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-import time
-import random
 import argparse
 import os.path
+import random
+import sys
+import time
 
 TITLE = "Multicell: Conway's Game of Life with a twist."
 PADDING = 5
@@ -140,12 +141,15 @@ def main():
     life = Life(args.seed, args.padding)
 
     # Start the simulation!
+    sys.stdout.write('\n')
     while True:
-        print(chr(27) + "[2J") # Clear the terminal.
+        #print(chr(27) + "[2J") # Clear the terminal.
         print TITLE
         life.display()
         life.next_generation()
         time.sleep(args.interval)
+        for _ in range(life.disp_rows + 3):
+            sys.stdout.write("\x1b[A")
 
 if __name__ == '__main__':
     main()
