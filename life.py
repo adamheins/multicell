@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
 import argparse
+import curses
 import os.path
 import random
+import signal
 import sys
 import time
 
-TITLE = "Multicell: Conway's Game of Life with a twist."
 PADDING = 5
 DEAD_CHAR = '.'
 FILL_CHAR = ' '
@@ -94,11 +95,11 @@ class Life:
                 new_grid[row][col] = self.generate_cell(row, col)
         self.grid = new_grid
 
-    def display(self):
+    def display(self, stdscr):
         """ Print the grid to the screen. """
         hor_border = '{c:{b}<{w}}{c}'.format(c='+', b='-', w=self.disp_cols+1)
 
-        print hor_border
+        stdscr.addstr(hor_border + '\n')
         for row in range(self.padding, self.rows - self.padding):
             row_str = '|'
             for col in range(self.padding, self.cols - self.padding):
@@ -107,16 +108,15 @@ class Life:
                     row_str = row_str + FILL_CHAR
                 else:
                     row_str = row_str + char
-            print row_str + '|'
-        print hor_border
+            stdscr.addstr(row_str + '|\n')
+        stdscr.addstr(hor_border + '\n')
 
     def make_empty_grid(self):
         """ Makes a grid for the Game initialized with the dead character. """
         return [[self.dead_char for col in range(self.cols)]
                 for row in range(self.rows)]
 
-
-def main():
+def main(stdscr):
 
     # Parse command line arguments.
     parser = argparse.ArgumentParser()
@@ -137,19 +137,41 @@ def main():
     if args.interval < 0:
         raise ValueError('--time-interval must not be negative.')
 
+    stdscr.nodelay(True)
+
     # Create a new instance of Game of Life.
     life = Life(args.seed, args.padding)
 
     # Start the simulation!
-    sys.stdout.write('\n')
+    stdscr.addstr("Multicell\nConway's Game of Life with a twist.")
+    stdscr.move(life.disp_rows + 4, 0)
+    stdscr.addstr("Press 'q' to quit, 'p' to pause/unpause, and 's' to step "
+                  "when paused.\n")
+
+    pause = False
     while True:
-        #print(chr(27) + "[2J") # Clear the terminal.
-        print TITLE
-        life.display()
+        stdscr.move(2, 0)
+        life.display(stdscr)
+        stdscr.refresh()
+        stdscr.move(life.disp_rows + 5, 0)
         life.next_generation()
+        c = stdscr.getch()
+        if c == ord('q'):
+            sys.exit(0)
+        elif c == ord('p') or pause:
+            pause = True
+            stdscr.nodelay(False)
+            while True:
+                c = stdscr.getch()
+                if c == ord('q'):
+                    sys.exit(0)
+                elif c == ord('p'):
+                    pause = False
+                    break
+                elif c == ord('s'):
+                    break
+            stdscr.nodelay(True)
         time.sleep(args.interval)
-        for _ in range(life.disp_rows + 3):
-            sys.stdout.write("\x1b[A")
 
 if __name__ == '__main__':
-    main()
+    curses.wrapper(main)
