@@ -13,8 +13,8 @@ import re
 # Defaults.
 OUT_FILE = 'seed.txt'
 FILL_CHAR = '.'
-ROWS = 20
-COLS = 20
+ROWS = 35
+COLS = 100
 
 
 def clean(out_file, rows, cols):
@@ -26,6 +26,7 @@ def clean(out_file, rows, cols):
             out_file.write('\n')
 
 def main():
+    """ Setup. """
     parser = argparse.ArgumentParser()
     parser.add_argument('-o', '--out', help='Name of output file.', dest='out',
                         default=OUT_FILE, metavar='out_file')
