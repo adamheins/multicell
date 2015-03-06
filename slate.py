@@ -1,4 +1,11 @@
 #!/usr/bin/env python
+#
+# Copyright (c) 2015 Adam Heins
+#
+# This file is part of the Multicell project, which is distributed under the MIT
+# license. For the full terms, see the included LICENSE file.
+#
+
 import argparse
 import os.path
 import re
@@ -21,11 +28,11 @@ def clean(out_file, rows, cols):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-o', '--out', help='Name of output file.', dest='out',
-                        default=OUT_FILE)
+                        default=OUT_FILE, metavar='out_file')
     parser.add_argument('-r', '--rows', help='Number of rows to fill.',
-                        type=int, dest='rows', default=ROWS)
+                        type=int, dest='rows', default=ROWS, metavar='rows')
     parser.add_argument('-c', '--cols', help='Number of columns to fill.',
-                        type=int, dest='cols', default=COLS)
+                        type=int, dest='cols', default=COLS, metavar='cols')
     parser.add_argument('-f', '--force', help="Don't ask before overwriting a "
                         "file.", dest='force', action='store_true')
     args = parser.parse_args()
