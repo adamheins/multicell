@@ -14,12 +14,18 @@ import signal
 import sys
 import time
 
+# Default values.
 PADDING = 5
 DEAD_CHAR = '.'
 FILL_CHAR = ' '
 INTERVAL = 0.05
 
-class Life:
+class MulticellError(Exception):
+    """ Represents an error that occurred with the Multicell program. """
+    pass
+
+class Multicell:
+    """ Represents a Multicell Game of Life. """
 
     def __init__(self, seed_file, padding):
         self.dead_char = DEAD_CHAR
@@ -43,9 +49,17 @@ class Life:
         self.grid = self.make_empty_grid()
 
         # Copy the contents of the file into their proper places in the grid.
+        # Performs error checking to ensure that the seed is rectangular.
+        # Also replaces occurences of the fill char with that of the dead char,
+        # which makes more sense for display purposes.
         for row in range(self.disp_rows):
+            if len(lines[row].strip()) != self.disp_cols:
+                raise MulticellError('Seed is not rectangular!')
             for col in range(self.disp_cols):
-                self.grid[row + self.padding][col + self.padding] = lines[row][col]
+                char = lines[row][col]
+                if char == FILL_CHAR:
+                    char = DEAD_CHAR
+                self.grid[row + self.padding][col + self.padding] = char
 
     def get_neighbours(self, row, col):
         """ Gathers all the live neighbours of the cell. """
@@ -141,12 +155,12 @@ def handle_keys(stdscr, pause):
         stdscr.nodelay(True)
     return pause
 
-def game(stdscr):
+def game(stdscr, seed, padding, interval):
     """ Main game loop. """
     stdscr.nodelay(True)
 
     # Create a new instance of Game of Life.
-    life = Life(args.seed, args.padding)
+    life = Multicell(seed, padding)
 
     # Display title and instructions.
     stdscr.addstr("Multicell\nConway's Game of Life with a twist.")
@@ -164,7 +178,7 @@ def game(stdscr):
         stdscr.move(life.disp_rows + 5, 0)
         life.next_generation()
         pause = handle_keys(stdscr, pause)
-        time.sleep(args.interval)
+        time.sleep(interval)
 
 def main():
     """ Setup. """
@@ -188,7 +202,7 @@ def main():
     if args.interval < 0:
         raise ValueError('--time-interval must not be negative.')
 
-    curses.wrapper(game)
+    curses.wrapper(game, args.seed, args.padding, args.interval)
 
 if __name__ == '__main__':
     main()
