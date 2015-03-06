@@ -17,6 +17,9 @@ Now that you have a nice blank slate for a seed, you need to add some live cells
 ## Running the Game
 Just run `./life.py seed_file` where `seed_file` is the path to the seed file. To view other arguments that can be passed to life.py and to get help, run `./life.py -h`.
 
+## Example
+Run `./life.py seed.txt` for a built in example with blinker and a Gosper glider gun. It uses two cell types.
+
 ## Platforms
 Works on Linux and Mac OSX.
 
