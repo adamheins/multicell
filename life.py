@@ -64,7 +64,6 @@ class Life:
         """ Generates a the next state of a cell based on its neighbours. """
         neighbours = self.get_neighbours(row, col)
         num_neighbours = len(neighbours)
-
         # Live cells continue to survive if they have only two or three
         # neighbours.
         if self.grid[row][col] != self.dead_char:
@@ -116,7 +115,28 @@ class Life:
         return [[self.dead_char for col in range(self.cols)]
                 for row in range(self.rows)]
 
+def handle_keys(stdscr, pause):
+    """ Handles key presses that occur during the Game loop. """
+    c = stdscr.getch()
+    if c == ord('q'):
+        sys.exit(0)
+    elif c == ord('p') or pause:
+        pause = True
+        stdscr.nodelay(False)
+        while True:
+            c = stdscr.getch()
+            if c == ord('q'):
+                sys.exit(0)
+            elif c == ord('p'):
+                pause = False
+                break
+            elif c == ord('s'):
+                break
+        stdscr.nodelay(True)
+    return pause
+
 def main(stdscr):
+    """ Setup and main Game loop. """
 
     # Parse command line arguments.
     parser = argparse.ArgumentParser()
@@ -142,35 +162,22 @@ def main(stdscr):
     # Create a new instance of Game of Life.
     life = Life(args.seed, args.padding)
 
-    # Start the simulation!
+    # Display title and instructions.
     stdscr.addstr("Multicell\nConway's Game of Life with a twist.")
     stdscr.move(life.disp_rows + 4, 0)
     stdscr.addstr("Press 'q' to quit, 'p' to pause/unpause, and 's' to step "
                   "when paused.\n")
 
     pause = False
+
+    # Game loop.
     while True:
         stdscr.move(2, 0)
         life.display(stdscr)
         stdscr.refresh()
         stdscr.move(life.disp_rows + 5, 0)
         life.next_generation()
-        c = stdscr.getch()
-        if c == ord('q'):
-            sys.exit(0)
-        elif c == ord('p') or pause:
-            pause = True
-            stdscr.nodelay(False)
-            while True:
-                c = stdscr.getch()
-                if c == ord('q'):
-                    sys.exit(0)
-                elif c == ord('p'):
-                    pause = False
-                    break
-                elif c == ord('s'):
-                    break
-            stdscr.nodelay(True)
+        pause = handle_keys(stdscr, pause)
         time.sleep(args.interval)
 
 if __name__ == '__main__':
