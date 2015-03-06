@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+#
+# Copyright (c) 2015 Adam Heins
+#
+# This file is part of the Multicell project, which is distributed under the MIT
+# license. For the full terms, see the included LICENSE file.
+#
 
 import argparse
 import curses
@@ -135,28 +141,8 @@ def handle_keys(stdscr, pause):
         stdscr.nodelay(True)
     return pause
 
-def main(stdscr):
-    """ Setup and main Game loop. """
-
-    # Parse command line arguments.
-    parser = argparse.ArgumentParser()
-    parser.add_argument('seed', help='Seed file for the Game.')
-    parser.add_argument('-p', '--padding', help='Amount of padding outside of '
-                        'visible area.', dest='padding', type=int,
-                        default=PADDING)
-    parser.add_argument('-t', '--time-interval', help='Time in seconds between '
-                        'each generation.', dest='interval', type=float,
-                        default=INTERVAL)
-    args = parser.parse_args()
-
-    # Argument error checking.
-    if not os.path.exists(args.seed):
-        raise IOError('Seed file {} does not exist!'.format(args.seed))
-    if args.padding < 0:
-        raise ValueError('--padding must not be negative.')
-    if args.interval < 0:
-        raise ValueError('--time-interval must not be negative.')
-
+def game(stdscr):
+    """ Main game loop. """
     stdscr.nodelay(True)
 
     # Create a new instance of Game of Life.
@@ -180,5 +166,29 @@ def main(stdscr):
         pause = handle_keys(stdscr, pause)
         time.sleep(args.interval)
 
+def main():
+    """ Setup. """
+
+    # Parse command line arguments.
+    parser = argparse.ArgumentParser()
+    parser.add_argument('seed', help='Seed file for the Game.')
+    parser.add_argument('-p', '--padding', help='Amount of padding outside of '
+                        'visible area.', dest='padding', type=int,
+                        default=PADDING, metavar='padding')
+    parser.add_argument('-t', '--time-interval', help='Time in seconds between '
+                        'each generation.', dest='interval', type=float,
+                        default=INTERVAL, metavar='time-interval')
+    args = parser.parse_args()
+
+    # Argument error checking.
+    if not os.path.exists(args.seed):
+        raise IOError('Seed file {} does not exist!'.format(args.seed))
+    if args.padding < 0:
+        raise ValueError('--padding must not be negative.')
+    if args.interval < 0:
+        raise ValueError('--time-interval must not be negative.')
+
+    curses.wrapper(game)
+
 if __name__ == '__main__':
-    curses.wrapper(main)
+    main()
