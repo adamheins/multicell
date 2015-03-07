@@ -20,7 +20,7 @@ Just run `./life.py seed_file` where `seed_file` is the path to the seed file. T
 ## Example
 Run `./life.py seed.txt` for a built in example with blinker and a Gosper glider gun. It uses two cell types.
 
-Here is a screenshot of the Game, with the example seed.txt, in action:
+Here is a screenshot of Multicell, with the example seed.txt, in action:
 
 ![Delightful Screenshot](screenshot.png?raw=true)
 
