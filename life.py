@@ -20,8 +20,20 @@ DEAD_CHAR = '.'
 FILL_CHAR = ' '
 INTERVAL = 0.05
 
-class MulticellError(Exception):
-    """ Represents an error that occurred with the Multicell program. """
+class NonRectangularSeedError(Exception):
+    """ Raised when the provided seed is not rectangular. """
+    pass
+
+class ArgumentError(Exception):
+    """ Raised when passed arguments are not correct. """
+    pass
+
+class WindowTooSmallError(Exception):
+    """ Raised when the terminal window is too small for the program to fit. """
+    pass
+
+class SeedFileNotExistsError(Exception):
+    """ Raised when the seed file does not exist. """
     pass
 
 class Multicell:
@@ -54,7 +66,7 @@ class Multicell:
         # which makes more sense for display purposes.
         for row in range(self.disp_rows):
             if len(lines[row].strip()) != self.disp_cols:
-                raise MulticellError('Seed is not rectangular!')
+                raise NonRectangularSeedError('Seed is not rectangular!')
             for col in range(self.disp_cols):
                 char = lines[row][col]
                 if char == FILL_CHAR:
@@ -162,23 +174,26 @@ def game(stdscr, seed, padding, interval):
     # Create a new instance of Game of Life.
     life = Multicell(seed, padding)
 
-    # Display title and instructions.
-    stdscr.addstr("Multicell\nConway's Game of Life with a twist.")
-    stdscr.move(life.disp_rows + 4, 0)
-    stdscr.addstr("Press 'q' to quit, 'p' to pause/unpause, and 's' to step "
-                  "when paused.\n")
+    try:
+        # Display title and instructions.
+        stdscr.addstr("Multicell\nConway's Game of Life with a twist.")
+        stdscr.move(life.disp_rows + 4, 0)
+        stdscr.addstr("Press 'q' to quit, 'p' to pause/unpause, and 's' to "
+                      "step when paused.\n")
 
-    pause = False
+        pause = False
 
-    # Game loop.
-    while True:
-        stdscr.move(2, 0)
-        life.display(stdscr)
-        stdscr.refresh()
-        stdscr.move(life.disp_rows + 5, 0)
-        life.next_generation()
-        pause = handle_keys(stdscr, pause)
-        time.sleep(interval)
+        # Game loop.
+        while True:
+            stdscr.move(2, 0)
+            life.display(stdscr)
+            stdscr.refresh()
+            stdscr.move(life.disp_rows + 5, 0)
+            life.next_generation()
+            pause = handle_keys(stdscr, pause)
+            time.sleep(interval)
+    except curses.error:
+        raise WindowTooSmallError('Terminal window too small for the seed!')
 
 def main():
     """ Setup. """
@@ -196,13 +211,18 @@ def main():
 
     # Argument error checking.
     if not os.path.exists(args.seed):
-        raise IOError('Seed file {} does not exist!'.format(args.seed))
+        raise SeedFileNotExistsError("Seed file '{}' does not exist!"
+                .format(args.seed))
     if args.padding < 0:
-        raise ValueError('--padding must not be negative.')
+        raise ArgumentError('--padding must not be negative.')
     if args.interval < 0:
-        raise ValueError('--time-interval must not be negative.')
+        raise ArgumentError('--time-interval must not be negative.')
 
     curses.wrapper(game, args.seed, args.padding, args.interval)
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except (WindowTooSmallError, NonRectangularSeedError, ArgumentError,
+            SeedFileNotExistsError) as e:
+        print 'Error: {}'.format(e.message)
